@@ -7,6 +7,30 @@
     <link rel="icon" href="https://fav.farm/🔥" />
   </head>
   <body>
-    <script></script>
+    <script>
+      // Keep track of every key the user has pressed
+      const pressed = [];
+      // The secret code we're listening for
+      const secretCode = "wesbos";
+
+      window.addEventListener("keyup", (e) => {
+        console.log(e.key);
+        // Push each new key into the array as the user types
+        pressed.push(e.key);
+        // Trim the array so it never grows longer than the secret code —
+        // only remember the most recent keystrokes
+        pressed.splice(
+          -secretCode.length - 1, 
+          pressed.length - secretCode.length
+        );
+        // Join the stored keys into a string and check if it matches the secret code
+        if (pressed.join("").includes(secretCode)) {
+          console.log("DING DING!");
+          // Trigger the cornify effect as a reward for entering the secret code
+          cornify_add();
+        }
+        console.log(pressed);
+      })
+    </script>
   </body>
 </html>
