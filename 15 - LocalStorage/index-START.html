@@ -20,6 +20,7 @@
     <ul class="plates">
       <li>Loading Tapas...</li>
     </ul>
+    <button class="check-all">Check all</button>
     <form class="add-items">
       <input type="text" name="item" placeholder="Item Name" required>
       <input type="submit" value="+ Add Item">
@@ -27,12 +28,76 @@
   </div>
 
 <script>
+  // Query DOM elements
   const addItems = document.querySelector('.add-items');
   const itemsList = document.querySelector('.plates');
-  const items = [];
+  const checkAllBtn = document.querySelector('.check-all');
 
+  // Load items from localStorage, or start with an empty array
+  const items = JSON.parse(localStorage.getItem("items")) || [];
+
+  // Handle form submission — create a new item and add it to the list
+  function addItem(e) {
+    e.preventDefault();
+    const text = (this.querySelector("[name=item]")).value;
+    const item = {
+      text,
+      done: false
+    };
+    items.push(item);
+    populateList(items, itemsList);
+    localStorage.setItem('items', JSON.stringify(items));
+    updateCheckAllBtn();
+    this.reset();
+  }
+
+  // Render the list of items to the DOM
+  function populateList(plates = [], platesList) {
+    platesList.innerHTML = plates.map((plate, i) => {
+      return `
+        <li>
+          <input type="checkbox" data-index=${i} id="item${i}" ${plate.done ? "checked" : ""} />
+          <label for="item${i}">${plate.text}</label>
+        </li>
+      `;
+    }).join("");
+  }
+
+  // Toggle the done state of a single item when its checkbox is clicked
+  function toggleDone(e) {
+    if (!e.target.matches("input")) return; // skip if click wasn't on a checkbox
+    const index = e.target.dataset.index;
+    items[index].done = !items[index].done;
+    localStorage.setItem("items", JSON.stringify(items));
+    populateList(items, itemsList);
+    updateCheckAllBtn();
+  }
+
+  // Check all items if any are unchecked, otherwise uncheck all
+  function toggleAll() {
+    if (items.length === 0) return; // nothing to do if list is empty
+    const allDone = items.every(item => item.done);
+    items.forEach(item => item.done = !allDone);
+    localStorage.setItem("items", JSON.stringify(items));
+    populateList(items, itemsList);
+    updateCheckAllBtn();
+  }
+
+  // Sync the button label with the current state of the list
+  function updateCheckAllBtn() {
+    const allDone = items.every(item => item.done);
+    checkAllBtn.textContent = allDone && items.length > 0 ? "Uncheck all" : "Check all";
+  }
+
+  // Event listeners
+  addItems.addEventListener("submit", addItem);
+  itemsList.addEventListener("click", toggleDone);
+  checkAllBtn.addEventListener("click", toggleAll);
+
+  // Initial render on page load
+  populateList(items, itemsList);
+  updateCheckAllBtn();
 </script>
-
 
 </body>
 </html>
